@@ -13,5 +13,8 @@
     "cli-table": "^0.3.1",
     "lodash": "^4.17.4",
     "mongo-oplog": "1.0.1"
+  },
+  "scripts": {
+    "start": "./index.js"
   }
 }
