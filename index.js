@@ -16,8 +16,11 @@ const stderr = new Console(process.stderr);
 const HELP = `
 Usage: oplog-tailer.js [MONGO URL]
 
-If MONGO URL is not given, the MONGO_URL environment variable will be used.
+If MONGO URL is not given, the MONGO_OPLOG_URL environment variable will be used.
 If that's not set, it will default to mongodb://localhost.
+
+Do not include a database name in the mongo URL. The "local" database (which contains
+the oplog) will always be used.
 `
 if ((process.argv[2] === '--help') || (process.argv[2] === '-h')) {
   stderr.log(HELP)
@@ -25,8 +28,17 @@ if ((process.argv[2] === '--help') || (process.argv[2] === '-h')) {
 }
 
 // Set up oplog tailing
-const oplogUrl = process.argv[2] || process.env.MONGO_OPLOG_URL || 'mongodb://localhost';
-const oplog = MongoOplog(oplogUrl, {}).tail();
+const oplogUrl = process.argv[2] || process.env.MONGO_OPLOG_URL || 'mongodb://localhost/';
+
+let oplogUrlWithDB;
+if (oplogUrl.charAt(oplogUrl.length - 1) === '/') {
+  oplogUrlWithDB = oplogUrl + 'local';
+} else {
+  oplogUrlWithDB = oplogUrl + '/local';
+}
+
+const oplog = MongoOplog(oplogUrlWithDB);
+oplog.tail();
 
 // [database.table] -> [size in bytes]
 const totalSizePerDb = {};
